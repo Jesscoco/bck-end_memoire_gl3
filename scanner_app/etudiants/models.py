@@ -13,8 +13,10 @@ class Etudiant(models.Model):
     specialite = models.CharField(max_length=100)
     code_specialite = models.CharField(max_length=100)
     annee_academique = models.CharField(max_length=100)
-
+    
+    def __str__(self) -> str:
+        return '{} {}'.format(self.nom, self.prenoms)
 
 class Presence(models.Model):
     date = models.DateTimeField(auto_now_add=True)
-    etudiants= models.ForeignKey(Etudiant, verbose_name="", on_delete=models.CASCADE)
+    etudiants= models.ForeignKey(Etudiant, verbose_name="",related_name='presences', on_delete=models.CASCADE)

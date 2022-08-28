@@ -9,6 +9,9 @@ class EtudiantSerializers (serializers.ModelSerializer):
         fields ='__all__'
 
 class PresenceSerializers (serializers.ModelSerializer):
+
+    #modifier la serialization du champ etudiants qui est dans le models presence
+    #etudiants = EtudiantSerializers()
     #ajout du model(des champs)  que la classe Presence va utiliser
     class Meta:
         model = Presence
