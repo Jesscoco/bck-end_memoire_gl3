@@ -6,5 +6,7 @@ urlpatterns = [
     path('<int:id>', views.EtudiantDetails.as_view()), #passer un id de type int une forme de castage
     path('liste/<int:etudiant_id>', views.PresenceListe.as_view()), 
     path('presence',views.PresenceViewCreate.as_view()),
+    path('getqrcode',views.get_qr_code),
+
 
 ]
