@@ -42,11 +42,13 @@ class PresenceViewCreate(generics.ListCreateAPIView):
 
 #
 @csrf_exempt 
-def get_qr_code(request):
-    if request.method == 'POST':
-        data= JSONParser().parse(request) # recuprere les data de la request avec une image
+def get_qr_code(request,url):
+    if request.method == 'POST' or request.method== 'GET':
+        print(url)
+        #data= JSONParser().parse(request) # recuprere les data de la request avec une image
         #recuperer les datas par l'url
-        code_url = data['url']
+        #code_url = data['url']
+        code_url = url
         response = requests.get(code_url,verify=False)
         if response.status_code == 200:
             html_doc= response.text
