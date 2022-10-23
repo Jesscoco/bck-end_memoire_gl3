@@ -7,6 +7,7 @@ urlpatterns = [
     path('liste/<int:etudiant_id>', views.PresenceListe.as_view()), 
     path('presence',views.PresenceViewCreate.as_view()),
     path('getqrcode/<path:url>',views.get_qr_code),
+    path('getstudent/',views.get_filtered_students),
 
 
 ]

@@ -9,6 +9,7 @@ from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
 import datetime
+from django.db.models import Q
 from bs4 import BeautifulSoup
 
 #afficher la liste des etudiants et permet la creation d'un etudiant
@@ -90,3 +91,26 @@ def get_qr_code(request,url):
             
     return JsonResponse({"status":True}, safe=False)
 
+@csrf_exempt   
+def get_filtered_students(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        annee_scolaire =data['anneeScolaire']
+        classe = data['classe'] 
+        filiere =data['filiere']
+        #fn de recherche
+        #words=[annee_scolaire,classe,filiere]
+        etudiants = Etudiant.objects.all()
+        #results = etudiant.filter(
+       # Q(nom__exact="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"))
+        # iterate through keywords
+        results = etudiants.filter(Q(annee_academique__contains=annee_scolaire))
+        ndresults = results.filter(Q(code_specialite__icontains=classe))
+        results = ndresults.filter(Q(specialite__icontains=filiere))
+       # for word in words:
+        #    etudiants = etudiant.filter(Q(annee_academique__icontains=word) & Q(
+         #  results |= etudiants
+
+        etudiants_serializers = EtudiantSerializers(results, many=True)  
+        print(etudiants_serializers.data)
+    return JsonResponse({"status":True, "data":etudiants_serializers.data}, safe=False)
