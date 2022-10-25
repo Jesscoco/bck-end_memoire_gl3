@@ -1,3 +1,4 @@
+from typing import final
 from unicodedata import lookup
 from django.shortcuts import render
 from rest_framework import generics
@@ -31,7 +32,7 @@ class PresenceListe(generics.ListCreateAPIView):
 
     def get(self, request, *args, **kwargs):
         etudiant = Etudiant.objects.get(id=kwargs['etudiant_id'])
-        presences = etudiant.presences.all()
+        presences = etudiant.presences
         presences_serializer = PresenceSerializers(presences, many=True)
         return Response(presences_serializer.data)
          
@@ -78,7 +79,10 @@ def get_qr_code(request,url):
             etudiant = Etudiant.objects.filter(matricule = etudiant_info[2])
             print(etudiant)
             if etudiant:
-                Presence.objects.create(etudiants = etudiant[0])
+                
+                presence=Presence.objects.create()
+                etudiant[0].presences.add(presence)
+                etudiant[0].save()
             else:
                 new_etudiant = Etudiant.objects.create(
                 nom=etudiant_info[0], prenoms=etudiant_info[1],matricule=etudiant_info[2],
@@ -86,7 +90,9 @@ def get_qr_code(request,url):
                 lieu_naissance=etudiant_info[6],specialite=etudiant_info[9],
                 code_specialite=etudiant_info[8],annee_academique=etudiant_info[7]
                 )
-                Presence.objects.create(etudiants = new_etudiant)
+                presence=Presence.objects.create()
+                new_etudiant.presences.add(presence)
+                new_etudiant.save()
 
             
     return JsonResponse({"status":True}, safe=False)
@@ -98,6 +104,8 @@ def get_filtered_students(request):
         annee_scolaire =data['anneeScolaire']
         classe = data['classe'] 
         filiere =data['filiere']
+        date = data['date']
+        filtered_date = datetime.datetime.strptime(date, '%Y-%m-%d')if date!=''else None
         #fn de recherche
         #words=[annee_scolaire,classe,filiere]
         etudiants = Etudiant.objects.all()
@@ -107,10 +115,21 @@ def get_filtered_students(request):
         results = etudiants.filter(Q(annee_academique__contains=annee_scolaire))
         ndresults = results.filter(Q(code_specialite__icontains=classe))
         results = ndresults.filter(Q(specialite__icontains=filiere))
-       # for word in words:
-        #    etudiants = etudiant.filter(Q(annee_academique__icontains=word) & Q(
-         #  results |= etudiants
+        final_result = etudiants.filter(
+        Q(nom__exact="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"))
+        if filtered_date:
+            for result in results:
+                etudiant= Etudiant.objects.get(id=result.id)
+                presences = etudiant.presences.all()
+                presences_serializer = PresenceSerializers(presences, many=True)
+                for presence in presences:
+                    print(filtered_date.date())
+                    print(presence.date.date())
+                    if filtered_date.date() == presence.date.date():
+                        final_result|= results
+        else:
+            final_result=results
 
-        etudiants_serializers = EtudiantSerializers(results, many=True)  
-        print(etudiants_serializers.data)
+        print(final_result)
+        etudiants_serializers = EtudiantSerializers(final_result, many=True)  
     return JsonResponse({"status":True, "data":etudiants_serializers.data}, safe=False)
