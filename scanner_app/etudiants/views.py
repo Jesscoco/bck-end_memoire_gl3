@@ -5,7 +5,6 @@ from rest_framework import generics
 from rest_framework.response import Response
 from etudiants.serializers import  *
 from rest_framework.parsers import JSONParser
-#from rest_framework.response import Response
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
@@ -131,5 +130,19 @@ def get_filtered_students(request):
             final_result=results
 
         print(final_result)
-        etudiants_serializers = EtudiantSerializers(final_result, many=True)  
-    return JsonResponse({"status":True, "data":etudiants_serializers.data}, safe=False)
+        etudiants_serializer = EtudiantSerializers(final_result, many=True)  
+    return JsonResponse({"status":True, "data":etudiants_serializer.data}, safe=False)
+
+@csrf_exempt   
+def get_agenda(request, code):
+    if request.method == 'GET':
+        agenda = Agenda.objects.filter(code_specialite=code) 
+        days=agenda[0].dates.filter(
+        date__lte=datetime.datetime.today(),
+        date__gt=datetime.datetime.today() - datetime.timedelta(days=30)
+        )
+        days_serializer = DateHeureSerializers(days, many=True)
+
+    return JsonResponse(days_serializer.data, safe=False)
+    
+
